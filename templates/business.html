@@ -3,19 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ business_name }}</title>
+  <title>{{ business_name }} — {{ category }} in {{ city }}</title>
+  <meta name="description" content="{{ tagline }} {{ about[:120] }}..." />
+  <meta property="og:title"       content="{{ business_name }}" />
+  <meta property="og:description" content="{{ tagline }}" />
+  {% if hero_image %}<meta property="og:image" content="{{ hero_image }}" />{% endif %}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- LocalBusiness structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": {{ business_name | tojson }},
+    "description": {{ about | tojson }},
+    {% if phone %}"telephone": {{ phone | tojson }},{% endif %}
+    {% if address %}"address": {
+      "@type": "PostalAddress",
+      "streetAddress": {{ address | tojson }},
+      "addressLocality": {{ city | tojson }},
+      "addressCountry": {{ country | tojson }}
+    },{% endif %}
+    {% if rating %}"aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": {{ rating }},
+      "reviewCount": {{ reviews_count or 1 }}
+    },{% endif %}
+    {% if maps_url and maps_url != '#' %}"hasMap": {{ maps_url | tojson }},{% endif %}
+    "openingHoursSpecification": []
+  }
+  </script>
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --brand:   #1a56db;
-      --dark:    #111827;
-      --mid:     #374151;
-      --light:   #f9fafb;
-      --border:  #e5e7eb;
-      --radius:  10px;
+      --brand:  #1a56db;
+      --dark:   #111827;
+      --mid:    #374151;
+      --light:  #f9fafb;
+      --border: #e5e7eb;
+      --radius: 10px;
     }
 
     body { font-family: "Inter", sans-serif; color: var(--dark); background: #fff; }
@@ -24,13 +53,13 @@
     /* ── NAV ── */
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(255,255,255,0.95);
+      background: rgba(255,255,255,0.96);
       backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--border);
       padding: 16px 24px;
       display: flex; justify-content: space-between; align-items: center;
     }
-    nav .logo { font-weight: 700; font-size: 1.1rem; color: var(--dark); }
+    nav .logo { font-weight: 700; font-size: 1.1rem; }
     nav a.btn-nav {
       background: var(--brand); color: #fff;
       padding: 10px 20px; border-radius: var(--radius);
@@ -39,29 +68,32 @@
 
     /* ── HERO ── */
     .hero {
-      min-height: 520px;
+      min-height: 560px;
       background:
-        linear-gradient(135deg, rgba(17,24,39,0.82) 0%, rgba(26,86,219,0.72) 100%),
-        {% if hero_image %}url('{{ hero_image }}') center/cover no-repeat{% else %}linear-gradient(135deg, #1e3a8a 0%, #1a56db 100%){% endif %};
+        linear-gradient(135deg, rgba(17,24,39,0.82) 0%, rgba(26,86,219,0.65) 100%),
+        {% if hero_image %}url('{{ hero_image }}') center/cover no-repeat{% else %}linear-gradient(135deg,#1e3a8a 0%,#1a56db 100%){% endif %};
       display: flex; align-items: center;
       padding: 80px 24px;
     }
-    .hero-inner { max-width: 720px; margin: 0 auto; text-align: center; color: #fff; }
-    .hero h1    { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; line-height: 1.15; margin-bottom: 16px; }
-    .hero p     { font-size: 1.2rem; opacity: 0.9; margin-bottom: 36px; }
+    .hero-inner { max-width: 740px; margin: 0 auto; text-align: center; color: #fff; }
+    .hero h1    { font-size: clamp(2rem,5vw,3.2rem); font-weight: 800; line-height: 1.15; margin-bottom: 16px; }
+    .hero p     { font-size: 1.2rem; opacity: 0.9; margin-bottom: 12px; }
+    .hero-meta  { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 36px; }
+    .hero-pill  {
+      background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 99px; padding: 6px 16px; font-size: 0.9rem; font-weight: 500;
+    }
     .hero-ctas  { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
     .btn-primary {
       background: #fff; color: var(--brand);
       padding: 14px 32px; border-radius: var(--radius);
-      font-weight: 700; font-size: 1rem;
-      transition: transform 0.15s;
+      font-weight: 700; font-size: 1rem; transition: transform 0.15s;
     }
     .btn-primary:hover { transform: translateY(-2px); }
     .btn-outline {
       border: 2px solid rgba(255,255,255,0.7); color: #fff;
       padding: 14px 32px; border-radius: var(--radius);
-      font-weight: 600; font-size: 1rem;
-      transition: background 0.15s;
+      font-weight: 600; font-size: 1rem; transition: background 0.15s;
     }
     .btn-outline:hover { background: rgba(255,255,255,0.15); }
 
@@ -72,33 +104,29 @@
       display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;
     }
     .badge { color: #fff; font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-    .badge svg { opacity: 0.9; }
 
-    /* ── SECTIONS COMMON ── */
+    /* ── SECTIONS ── */
     section { padding: 72px 24px; }
-    .container { max-width: 1000px; margin: 0 auto; }
+    .container { max-width: 1040px; margin: 0 auto; }
     h2 { font-size: 1.9rem; font-weight: 800; margin-bottom: 12px; }
     .subtitle { color: var(--mid); font-size: 1.05rem; margin-bottom: 40px; }
 
     /* ── ABOUT ── */
     .about { background: var(--light); }
     .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
-    .about p   { line-height: 1.75; color: var(--mid); font-size: 1.05rem; }
-    {% if rating %}
+    .about p    { line-height: 1.75; color: var(--mid); font-size: 1.05rem; }
     .rating-card {
-      background: #fff; border-radius: 16px; padding: 28px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
-      text-align: center;
+      background: #fff; border-radius: 16px; padding: 32px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07); text-align: center;
     }
-    .rating-num   { font-size: 3.5rem; font-weight: 800; color: var(--brand); }
-    .rating-label { color: var(--mid); font-size: 0.95rem; margin-top: 4px; }
-    .stars        { color: #f59e0b; font-size: 1.4rem; margin: 8px 0; }
-    {% endif %}
+    .rating-num   { font-size: 4rem; font-weight: 800; color: var(--brand); line-height: 1; }
+    .stars-row    { color: #f59e0b; font-size: 1.5rem; margin: 10px 0 6px; }
+    .rating-label { color: var(--mid); font-size: 0.95rem; }
 
     /* ── SERVICES ── */
     .services-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(190px,1fr));
       gap: 16px;
     }
     .service-card {
@@ -107,11 +135,77 @@
       font-weight: 600; font-size: 0.95rem;
       display: flex; align-items: center; gap: 10px;
     }
-    .service-card::before { content: "✓"; color: var(--brand); font-weight: 800; }
+    .service-card::before { content: "✓"; color: var(--brand); font-weight: 800; font-size: 1.1rem; }
+
+    /* ── GALLERY ── */
+    .gallery-section { background: var(--dark); padding: 64px 24px; }
+    .gallery-section h2 { color: #fff; }
+    .gallery-section .subtitle { color: rgba(255,255,255,0.6); }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+      gap: 12px;
+    }
+    .gallery-grid img {
+      width: 100%; aspect-ratio: 4/3; object-fit: cover;
+      border-radius: var(--radius); transition: transform 0.2s;
+      cursor: pointer;
+    }
+    .gallery-grid img:hover { transform: scale(1.03); }
+    .gallery-grid img:first-child {
+      grid-column: span 2; aspect-ratio: 16/7;
+    }
+
+    /* ── REVIEWS ── */
+    .reviews-section { background: var(--light); }
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
+      gap: 20px;
+    }
+    .review-card {
+      background: #fff; border-radius: 14px; padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .review-header { display: flex; align-items: center; gap: 12px; }
+    .reviewer-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--brand); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 1.1rem; flex-shrink: 0;
+    }
+    .reviewer-name  { font-weight: 700; font-size: 0.95rem; }
+    .reviewer-date  { font-size: 0.8rem; color: var(--mid); margin-top: 2px; }
+    .review-stars   { color: #f59e0b; font-size: 1rem; }
+    .review-text    { color: var(--mid); font-size: 0.93rem; line-height: 1.65; flex: 1; }
+    .google-badge   {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.78rem; color: var(--mid); margin-top: 4px;
+    }
+
+    /* ── FAQ ── */
+    .faq-section { background: #fff; }
+    .faq-list    { max-width: 760px; display: flex; flex-direction: column; gap: 12px; }
+    details {
+      border: 1px solid var(--border); border-radius: var(--radius);
+      overflow: hidden;
+    }
+    details[open] { border-color: var(--brand); }
+    summary {
+      padding: 18px 20px; font-weight: 600; font-size: 1rem;
+      cursor: pointer; list-style: none;
+      display: flex; justify-content: space-between; align-items: center;
+      user-select: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; font-size: 1.3rem; color: var(--brand); transition: transform 0.2s; }
+    details[open] summary::after { content: "−"; }
+    .faq-answer { padding: 0 20px 18px; color: var(--mid); line-height: 1.7; font-size: 0.97rem; }
 
     /* ── CONTACT ── */
     .contact { background: var(--light); }
-    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     .contact-box {
       background: #fff; border-radius: 16px; padding: 28px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.06);
@@ -127,17 +221,22 @@
       padding: 14px; border-radius: var(--radius);
       font-weight: 700; font-size: 1rem; text-align: center;
     }
+    .map-embed {
+      width: 100%; height: 220px; border: 0;
+      border-radius: var(--radius); margin-top: 16px;
+    }
 
     /* ── FOOTER ── */
     footer {
-      background: var(--dark); color: rgba(255,255,255,0.6);
-      padding: 28px 24px; text-align: center; font-size: 0.9rem;
+      background: var(--dark); color: rgba(255,255,255,0.55);
+      padding: 32px 24px; text-align: center; font-size: 0.9rem;
     }
     footer strong { color: #fff; }
 
     @media (max-width: 640px) {
       .about-grid, .contact-grid { grid-template-columns: 1fr; }
       .badges { gap: 20px; }
+      .gallery-grid img:first-child { grid-column: span 1; aspect-ratio: 4/3; }
     }
   </style>
 </head>
@@ -156,6 +255,11 @@
   <div class="hero-inner">
     <h1>{{ business_name }}</h1>
     <p>{{ tagline }}</p>
+    <div class="hero-meta">
+      {% if rating %}<span class="hero-pill">⭐ {{ rating }} rating</span>{% endif %}
+      {% if reviews_count %}<span class="hero-pill">{{ reviews_count }} Google reviews</span>{% endif %}
+      {% if city %}<span class="hero-pill">📍 {{ city }}</span>{% endif %}
+    </div>
     <div class="hero-ctas">
       {% if phone %}
       <a class="btn-primary" href="tel:{{ phone }}">Call {{ phone }}</a>
@@ -199,9 +303,9 @@
       {% if rating %}
       <div class="rating-card">
         <div class="rating-num">{{ rating }}</div>
-        <div class="stars">★★★★★</div>
+        <div class="stars-row">★★★★★</div>
         <div class="rating-label">
-          {% if reviews %}{{ reviews }} Google reviews{% else %}Google Rating{% endif %}
+          {% if reviews_count %}{{ reviews_count }} verified Google reviews{% else %}Google Rating{% endif %}
         </div>
       </div>
       {% endif %}
@@ -221,6 +325,70 @@
     </div>
   </div>
 </section>
+
+<!-- PHOTO GALLERY -->
+{% if gallery and gallery | length > 1 %}
+<section class="gallery-section">
+  <div class="container">
+    <h2>Our Work</h2>
+    <p class="subtitle">Photos from the job</p>
+    <div class="gallery-grid">
+      {% for img in gallery %}
+      <img src="{{ img }}" alt="{{ business_name }} photo {{ loop.index }}" loading="lazy" />
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- REVIEWS -->
+{% if reviews %}
+<section class="reviews-section">
+  <div class="container">
+    <h2>What Customers Say</h2>
+    <p class="subtitle">Real reviews from Google</p>
+    <div class="reviews-grid">
+      {% for r in reviews %}
+      <div class="review-card">
+        <div class="review-header">
+          <div class="reviewer-avatar">{{ r.name[0] | upper }}</div>
+          <div>
+            <div class="reviewer-name">{{ r.name }}</div>
+            {% if r.date %}<div class="reviewer-date">{{ r.date }}</div>{% endif %}
+          </div>
+        </div>
+        <div class="review-stars">
+          {% for i in range(r.stars) %}★{% endfor %}{% for i in range(5 - r.stars) %}☆{% endfor %}
+        </div>
+        <p class="review-text">{{ r.text }}</p>
+        <span class="google-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Verified Google Review
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- FAQ -->
+{% if faqs %}
+<section class="faq-section">
+  <div class="container">
+    <h2>Frequently Asked Questions</h2>
+    <p class="subtitle">Common questions about our {{ category }} services in {{ city }}</p>
+    <div class="faq-list">
+      {% for faq in faqs %}
+      <details {% if loop.first %}open{% endif %}>
+        <summary>{{ faq.q }}</summary>
+        <p class="faq-answer">{{ faq.a }}</p>
+      </details>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
 
 <!-- CONTACT -->
 <section class="contact">
@@ -246,6 +414,9 @@
         {% if phone %}
         <a class="call-btn" href="tel:{{ phone }}">📞 {{ cta }}</a>
         {% endif %}
+        {% if maps_url and maps_url != '#' %}
+        <a class="call-btn" style="background:#374151;margin-top:10px;" href="{{ maps_url }}" target="_blank" rel="noopener">View on Google Maps</a>
+        {% endif %}
       </div>
 
       <div class="contact-box">
@@ -259,8 +430,15 @@
         {% else %}
         <p style="color:var(--mid);font-size:0.95rem;">Call us to confirm availability.</p>
         {% endif %}
-        {% if maps_url and maps_url != '#' %}
-        <a class="call-btn" style="margin-top:16px;background:#374151;" href="{{ maps_url }}" target="_blank" rel="noopener">View on Google Maps</a>
+
+        {% if lat and lng %}
+        <iframe
+          class="map-embed"
+          src="https://maps.google.com/maps?q={{ lat }},{{ lng }}&hl=en&z=15&output=embed"
+          allowfullscreen
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
         {% endif %}
       </div>
 
@@ -270,8 +448,10 @@
 
 <!-- FOOTER -->
 <footer>
-  <strong>{{ business_name }}</strong> · {{ city }}
+  <strong>{{ business_name }}</strong> · {{ category }} · {{ city }}
   {% if phone %} · {{ phone }}{% endif %}
+  <br><br>
+  <small style="opacity:0.4;">© {{ business_name }}. All rights reserved.</small>
 </footer>
 
 </body>
