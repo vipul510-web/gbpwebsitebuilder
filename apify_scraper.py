@@ -17,6 +17,10 @@ def _start_run(search_string: str, location: str) -> str:
         "maxCrawledPlacesPerSearch": MAX_PLACES_PER_SEARCH,
         "language": "en",
         "outputAsJson": True,
+        "scrapeReviews": True,
+        "maxReviews": 10,
+        "scrapeImages": True,
+        "maxImages": 10,
     }
     resp = requests.post(
         f"{APIFY_BASE}/acts/{APIFY_ACTOR_ID}/runs",
